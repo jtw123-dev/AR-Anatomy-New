@@ -5,6 +5,7 @@ using Amazon.S3;
 using Amazon;
 using Amazon.CognitoIdentity;
 using Amazon.S3.Model;
+using System.IO;
 public class AWSManager : MonoBehaviour
 {
     private static AWSManager _instance;
@@ -20,13 +21,12 @@ public class AWSManager : MonoBehaviour
         }
     }
 
+    [SerializeField] private GameObject _targetImg;
     public string S3Region = RegionEndpoint.CACentral1.SystemName;
     private RegionEndpoint _S3Region
     {
         get { return RegionEndpoint.GetBySystemName(S3Region); }
     }
-
-
 
     private AmazonS3Client _s3Client;
     public AmazonS3Client S3Client
@@ -68,7 +68,41 @@ public class AWSManager : MonoBehaviour
             }
 
         });
+
+        DownloadBundle();
     }
 
+    public void DownloadBundle()
+    {
+        /* string bucketName = "arbundlesnew";
+         string fileName = "horse";
 
+         S3Client.GetObjectAsync(bucketName, fileName, (responseObj) =>
+              {
+                  if (responseObj.Exception == null)
+                  {
+                      string data = null;
+                      using (StreamReader reader = new StreamReader(responseObj.Response.ResponseStream))
+                      {
+                          data = reader.ReadToEnd();
+                          Debug.Log("Data" + data);
+                      }
+
+                  }
+             });*/
+        StartCoroutine(BundleRoutine());
+    }
+    IEnumerator BundleRoutine()
+    {
+        string url = "https://arbundlesnew.s3.ca-central-1.amazonaws.com/horse"; //https://arbundlesnew.s3.ca-central-1.amazonaws.com/horse
+        var request = new WWW(url);
+        yield return request;
+
+        Debug.Log("Asset Bundle: " + request.assetBundle.name);
+        AssetBundle bundle = request.assetBundle;
+        GameObject horse = bundle.LoadAsset<GameObject>("horse");
+       horse= Instantiate(horse);
+
+        horse.transform.parent = _targetImg.transform;
+    }
 }
